@@ -4,7 +4,7 @@ module.exports = app => {
   app.post('/api/users', function(req, res, next) {
     const user = new User({
       name : req.body.name,
-      email : req.body.email.main
+      email : req.body.email
     });
     user
       .save()
@@ -20,7 +20,7 @@ module.exports = app => {
       .exec()
       .then(user => {
         user.name = req.body.name;
-        user.email = req.body.email.main;
+        user.email = req.body.email;
 
         user
           .save()

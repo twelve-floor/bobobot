@@ -12,7 +12,7 @@ module.exports = app => {
     const patient = new Patient({
       name : req.body.name,
       phoneNumber : req.body.phoneNumber,
-      email : req.body.email.main
+      email : req.body.email
     });
     patient
       .save()
@@ -33,7 +33,7 @@ module.exports = app => {
       .then(patient => {
         patient.name = req.body.name;
         patient.age = req.body.age;
-        patient.email = req.body.email.main;
+        patient.email = req.body.email;
 
         patient
           .save()
