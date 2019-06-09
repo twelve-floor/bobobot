@@ -12,6 +12,7 @@ npm install
 - create `.env` file and add 
     - `DB_URL = <your_mongo_url>`
     - `BOT_TOKEN = <telegram_bot_token>`
+    - `JWT_SECRET = <random string>`
 
 
 ## Running
