@@ -1,11 +1,4 @@
-# MERN-boilerplate
-
-This is a boilerplate project using the following technologies:
-- [React](https://facebook.github.io/react/) and [React Router](https://reacttraining.com/react-router/) for the frontend
-- [Express](http://expressjs.com/) and [Mongoose](http://mongoosejs.com/) for the backend
-- [Sass](http://sass-lang.com/) for styles (using the SCSS syntax)
-- [Webpack](https://webpack.github.io/) for compilation
-
+# Bobobot - a tool for doctors for creating automated notifcations using Telegram Bot API
 
 ## Requirements
 
@@ -15,8 +8,19 @@ This is a boilerplate project using the following technologies:
 npm install
 ```
 
+- Install [MongoDB](https://docs.mongodb.com/manual/administration/install-community/)
+- create `.env` file and add 
+    - `DB_URL = <your_mongo_url>`
+    - `BOT_TOKEN = <telegram_bot_token>`
+
 
 ## Running
+
+Development (Webpack dev server) mode:
+
+```shell
+npm run start:dev
+```
 
 Production mode:
 
@@ -24,8 +28,9 @@ Production mode:
 npm start
 ```
 
-Development (Webpack dev server) mode:
 
-```shell
-npm run start:dev
-```
+Project is created using [MERN boilerplate](https://github.com/keithweaver/MERN-boilerplate) with following technologies:
+- [React](https://facebook.github.io/react/) and [React Router](https://reacttraining.com/react-router/) for the frontend
+- [Express](http://expressjs.com/) and [Mongoose](http://mongoosejs.com/) for the backend
+- [Sass](http://sass-lang.com/) for styles (using the SCSS syntax)
+- [Webpack](https://webpack.github.io/) for compilation
