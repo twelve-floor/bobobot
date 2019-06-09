@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+require('mongoose-type-email');
 
 const PatientSchema = new mongoose.Schema({
   name: {
@@ -10,10 +11,9 @@ const PatientSchema = new mongoose.Schema({
     required: true
   },
   email: {
-    type: String,
-    required: false,    
-    unique: true,    
-    lowercase: true
+    type: mongoose.SchemaTypes.Email,
+    required: true,
+    unique: true
   }
 });
 

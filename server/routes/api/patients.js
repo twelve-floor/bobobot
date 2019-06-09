@@ -1,7 +1,9 @@
 const Patient = require('../../models/Patient');
+const authMiddleware = require('../../auth_middleware');
 
 module.exports = app => {
-  app.get('/api/patients', (req, res, next) => {
+  app.get('/api/patients', authMiddleware, (req, res, next) => {
+    console.log({ userId: req.userId });
     Patient.find()
       .exec()
       .then(patient => res.json(patient))
@@ -10,9 +12,9 @@ module.exports = app => {
 
   app.post('/api/patients', function(req, res, next) {
     const patient = new Patient({
-      name : req.body.name,
-      phoneNumber : req.body.phoneNumber,
-      email : req.body.email
+      name: req.body.name,
+      phoneNumber: req.body.phoneNumber,
+      email: req.body.email,
     });
     patient
       .save()
@@ -33,6 +35,7 @@ module.exports = app => {
       .then(patient => {
         patient.name = req.body.name;
         patient.age = req.body.age;
+        patient.email = req.body.email;
 
         patient
           .save()
