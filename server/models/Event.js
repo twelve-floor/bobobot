@@ -11,13 +11,16 @@ const EventSchema = new mongoose.Schema({
     required: true
   },
   patient: {
-    type: Number
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Patient'
   },
   doctor: {
-    type: Number
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
   parentEvent: {
-    type: Number
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Event'
   },
   sent: {
     type: Boolean
