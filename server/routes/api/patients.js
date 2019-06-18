@@ -3,7 +3,6 @@ const authMiddleware = require('../../auth_middleware');
 
 module.exports = app => {
   app.get('/api/patients', authMiddleware, (req, res, next) => {
-    console.log({ userId: req.userId });
     Patient.find()
       .exec()
       .then(patient => res.json(patient))
