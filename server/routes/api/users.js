@@ -13,11 +13,10 @@ const handleSuccess = (res, userId) => {
 module.exports = app => {
   app.post('/api/users/register', async (req, res) => {
     const hashCost = 10;
-    const { email, password } = req.body;
-
+    const { name, email, password } = req.body;
     try {
       const passwordHash = await bcrypt.hash(password, hashCost);
-      const user = new UserModel({ email, passwordHash });
+      const user = new UserModel({ name, email, passwordHash });
       await user.save();
       handleSuccess(res, user.id);
     } catch (error) {

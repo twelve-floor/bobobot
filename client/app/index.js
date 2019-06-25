@@ -6,7 +6,7 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import App from './components/App/App';
 import NotFound from './components/App/NotFound';
 
-import Home from './components/Home/Home';
+import Calendar from './components/Calendar/Calendar';
 
 import SignUp from './components/SignUp/SignUp';
 
@@ -16,8 +16,8 @@ render(
   <Router>
     <App>
       <Switch>
-        <Route exact path="/" component={Home} />
-        <Route path="/signup" component={SignUp} />
+        <Route exact path="/" component={SignUp} />
+        <Route path="/calendar" component={Calendar} />
         <Route component={NotFound} />
       </Switch>
     </App>
