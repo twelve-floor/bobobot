@@ -6,21 +6,6 @@ export default class PatientsList extends PureComponent {
     selectedPatient: null,
   };
 
-  patients = [
-    {
-      name: 'Mattie Stokes',
-      phone: '123123123',
-    },
-    {
-      name: 'Dr. Dino Simonis IV',
-      phone: '123123123',
-    },
-    {
-      name: 'Hannah Emmerich I',
-      phone: '123123123',
-    },
-  ];
-
   onSelectPatient = patient => {
     this.props.onPatientChange(patient);
     this.setState({ selectedPatient: patient.name, searchTerm: '' });
@@ -37,7 +22,7 @@ export default class PatientsList extends PureComponent {
     const onSelect = () => this.onSelectPatient(patient);
 
     return (
-      <div className={classes} key={patient.name} onClick={onSelect}>
+      <div className={classes} key={patient._id} onClick={onSelect}>
         <b>{patient.name}</b>
         <p>{patient.phone}</p>
       </div>
@@ -49,7 +34,7 @@ export default class PatientsList extends PureComponent {
   };
 
   render() {
-    const patients = this.patients
+    const patients = this.props.patients
       .filter(patient =>
         patient.name.toLowerCase().includes(this.state.searchTerm.toLowerCase())
       )

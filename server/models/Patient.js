@@ -4,17 +4,19 @@ require('mongoose-type-email');
 const PatientSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
   },
   phoneNumber: {
     type: String,
-    required: true
+    required: true,
   },
   email: {
-    type: mongoose.SchemaTypes.Email,
-    required: true,
-    unique: true
-  }
+    type: String,
+    trim: true,
+    index: true,
+    unique: true,
+    sparse: true,
+  },
 });
 
 module.exports = mongoose.model('Patient', PatientSchema);

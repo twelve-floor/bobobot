@@ -10,7 +10,7 @@ module.exports = app => {
       .catch(err => next(err));
   });
 
-  app.post('/api/patients', function(req, res, next) {
+  app.post('/api/patients', authMiddleware, function(req, res, next) {
     const patient = new Patient({
       name: req.body.name,
       phoneNumber: req.body.phoneNumber,
@@ -22,14 +22,14 @@ module.exports = app => {
       .catch(err => next(err));
   });
 
-  app.delete('/api/patients/:id', function(req, res, next) {
+  app.delete('/api/patients/:id', authMiddleware, function(req, res, next) {
     Patient.findOneAndRemove({ _id: req.params.id })
       .exec()
       .then(patient => res.json())
       .catch(err => next(err));
   });
 
-  app.put('/api/patients/:id', (req, res, next) => {
+  app.put('/api/patients/:id', authMiddleware, (req, res, next) => {
     Patient.findById(req.params.id)
       .exec()
       .then(patient => {

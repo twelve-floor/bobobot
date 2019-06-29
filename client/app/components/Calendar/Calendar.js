@@ -4,6 +4,8 @@ import moment from 'moment';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import Patients from './Patients';
 import Buttons from './Buttons';
+import axios from 'axios';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import './calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
@@ -21,9 +23,35 @@ class App extends PureComponent {
         title: 'Some title',
       },
     ],
-
+    loading: false,
+    patients: [
+      // {
+      //   name: 'Mattie Stokes',
+      //   phone: '123123123',
+      // },
+      // {
+      //   name: 'Dr. Dino Simonis IV',
+      //   phone: '123123123',
+      // },
+      // {
+      //   name: 'Hannah Emmerich I',
+      //   phone: '123123123',
+      // },
+    ],
     selectedPatient: null,
   };
+
+  componentDidMount() {
+    this.setState({ loading: true });
+    const token = localStorage.getItem('token');
+    axios
+      .get('/api/patients', { headers: { token } })
+      .then(res => {
+        console.log(res.data);
+        this.setState({ patients: res.data, loading: false });
+      })
+      .catch(err => alert(err));
+  }
 
   onEventResize = (type, { event, start, end, allDay }) => {
     this.setState(state => {
@@ -41,11 +69,19 @@ class App extends PureComponent {
     this.setState({ selectedPatient: patient });
   };
 
+  onPatientAdded = patient => {
+    this.setState({ patients: [...this.state.patients, patient] });
+  };
+
   render() {
     return (
       <div className="App">
-        <Patients onPatientChange={this.onPatientChange} />
-        <Buttons />
+        {this.state.loading && <CircularProgress />}
+        <Patients
+          onPatientChange={this.onPatientChange}
+          patients={this.state.patients}
+        />
+        <Buttons patientAdded={this.onPatientAdded} />
         <DnDCalendar
           defaultDate={new Date()}
           defaultView="month"
