@@ -2,13 +2,6 @@ const Event = require('../../models/Event');
 const authMiddleware = require('../../auth_middleware');
 
 module.exports = app => {
-  app.get('/api/events', authMiddleware, (req, res, next) => {
-    Event.find()
-      .exec()
-      .then(event => res.json(event))
-      .catch(err => next(err));
-  });
-
   app.get('/api/events/:patientId', authMiddleware, (req, res, next) => {
     Event.find({
       patient: req.params.patientId,
