@@ -2,6 +2,15 @@ const Event = require('../../models/Event');
 const authMiddleware = require('../../auth_middleware');
 
 module.exports = app => {
+  app.get('/api/events', authMiddleware, (req, res, next) => {
+    Event.find({
+      doctor: req.userId,
+    })
+      .exec()
+      .then(event => res.json(event))
+      .catch(err => next(err));
+  });
+
   app.get('/api/events/:patientId', authMiddleware, (req, res, next) => {
     Event.find({
       patient: req.params.patientId,
@@ -12,16 +21,15 @@ module.exports = app => {
       .catch(err => next(err));
   });
 
-  app.post('/api/events', authMiddleware, function(req, res, next) {
+  app.post('/api/events/:patientId', authMiddleware, function(req, res, next) {
     let eventArray = [];
-    for (i = 0; i < req.body.length; i++) {
+    for (let i = 0; i < req.body.length; i++) {
       const event = new Event({
         name: req.body[i].name,
         date: req.body[i].date,
-        patient: req.body[i].patient,
-        doctor: req.body[i].doctor,
+        patient: req.params.patientId,
+        doctor: req.userId,
         parentEvent: req.body[i].parentEvent,
-        sent: req.body[i].sent,
       });
       if (i >= 1) {
         event.parentEvent = eventArray[0]._id;

@@ -65,7 +65,6 @@ export default function SignUp(props) {
   }
 
   function handleError(error) {
-    // console.log(error);
     alert(error);
   }
 
