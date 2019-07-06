@@ -10,10 +10,17 @@ import Button from '@material-ui/core/Button';
 
 import AddPatientModal from './AddPatientModal';
 import AddEventModal from './AddEventModal';
+import AddEventTemplateModal from './AddEventTemplateModal';
+import SelectEventTemplateModal from './SelectEventTemplateModal';
 import Patients from './Patients';
 
 import { eventConverter } from './helpers';
-import { ADD_EVENT, ADD_PATIENT, ADD_EVENT_TEMPLATE } from './constants';
+import {
+  ADD_EVENT,
+  ADD_PATIENT,
+  ADD_EVENT_TEMPLATE,
+  CHOOSE_EVENTS_TEMPLATE,
+} from './constants';
 import './calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -36,13 +43,42 @@ Modal.setAppElement('#app');
 
 const ALL_PATIENTS_ID = 'all_patients';
 
+const createEventsFromTemplate = (date, template) => {
+  const eventsWithDifference = template.events.map((current, index) => {
+    if (index === 0) {
+      return {
+        name: current.name,
+        daysDelta: 0,
+      };
+    }
+    const prev = template.events[index - 1];
+    return {
+      name: current.name,
+      daysDelta: current.dayOffset - prev.dayOffset,
+    };
+  });
+
+  let tempDate = moment(date);
+  const items = eventsWithDifference.map(eventWithDelta => {
+    tempDate.add(eventWithDelta.daysDelta, 'day');
+    if (tempDate.weekday() > 5) {
+      tempDate.add(8 - tempDate.weekday(), 'day');
+    }
+    return {
+      name: eventWithDelta.name,
+      date: tempDate.toDate(),
+    };
+  });
+  return items;
+};
+
 class App extends PureComponent {
   state = {
     events: [],
     patients: [],
+    eventTemplates: [],
     selectedPatient: { _id: 'no_patient' },
     selectable: false,
-    adding: null,
     modalIsOpen: false,
   };
 
@@ -60,6 +96,16 @@ class App extends PureComponent {
           },
           () => this.onPatientChange(allPatients)
         );
+      })
+      .catch(err => alert(err));
+
+    axios
+      .get('/api/eventTemplates', { headers: { token } })
+      .then(res => {
+        this.setState({
+          eventTemplates: res.data,
+          loading: false,
+        });
       })
       .catch(err => alert(err));
   }
@@ -108,15 +154,48 @@ class App extends PureComponent {
   };
 
   onDateSelected = dateItem => {
-    this.selectedDate = dateItem.start;
-    this.setState({
-      selectable: false,
-      modalIsOpen: true,
-    });
+    if (this.modalContentType === ADD_EVENT) {
+      this.selectedDate = dateItem.start;
+      this.setState({
+        selectable: false,
+        modalIsOpen: true,
+      });
+    }
+    if (
+      this.modalContentType === CHOOSE_EVENTS_TEMPLATE &&
+      this.currentEventTemplate
+    ) {
+      this.setLoading(true);
+      const token = localStorage.getItem('token');
+      const patientId = this.state.selectedPatient._id;
+      const events = createEventsFromTemplate(
+        dateItem.start,
+        this.currentEventTemplate
+      );
+      axios
+        .post(`/api/events/${patientId}`, events, {
+          headers: { token: token },
+        })
+        .then(res => {
+          const events = res.data.map(eventConverter);
+          this.setState({
+            events: [...this.state.events, ...events],
+          });
+        })
+        .catch(er => console.error(er))
+        .finally(() => this.setLoading(false));
+
+      this.setState({
+        selectable: false,
+      });
+    }
   };
 
   onSetModalType = modalType => {
     this.modalContentType = modalType;
+    if (modalType === CHOOSE_EVENTS_TEMPLATE) {
+      this.setState({ modalIsOpen: true });
+    }
   };
 
   onSetSelectable = () => {
@@ -125,6 +204,11 @@ class App extends PureComponent {
 
   openAddPatientModal = () => {
     this.modalContentType = ADD_PATIENT;
+    this.setState({ modalIsOpen: true });
+  };
+
+  openAddEventTemplateModal = () => {
+    this.modalContentType = ADD_EVENT_TEMPLATE;
     this.setState({ modalIsOpen: true });
   };
 
@@ -140,6 +224,21 @@ class App extends PureComponent {
     const events = rawEvents.map(eventConverter);
     this.setState({
       events: [...this.state.events, ...events],
+      modalIsOpen: false,
+    });
+  };
+
+  onEventsTemplateAdded = newEventTemplate => {
+    this.setState({
+      eventTemplates: [...this.state.eventTemplates, newEventTemplate],
+      modalIsOpen: false,
+    });
+  };
+
+  onEventTemplateSelected = eventTemplate => {
+    this.currentEventTemplate = eventTemplate;
+    this.setState({
+      selectable: true,
       modalIsOpen: false,
     });
   };
@@ -162,6 +261,27 @@ class App extends PureComponent {
           date={this.selectedDate}
           eventsAdded={this.onEventsAdded}
           setLoading={this.setLoading}
+        />
+      );
+    }
+    if (this.modalContentType === ADD_EVENT_TEMPLATE) {
+      return (
+        <AddEventTemplateModal
+          closeModal={this.closeModal}
+          patientId={this.state.selectedPatient._id}
+          date={this.selectedDate}
+          eventsTemplateAdded={this.onEventsTemplateAdded}
+          setLoading={this.setLoading}
+        />
+      );
+    }
+
+    if (this.modalContentType === CHOOSE_EVENTS_TEMPLATE) {
+      return (
+        <SelectEventTemplateModal
+          closeModal={this.closeModal}
+          onEventTemplateSelected={this.onEventTemplateSelected}
+          eventTemplates={this.state.eventTemplates}
         />
       );
     }
@@ -188,7 +308,9 @@ class App extends PureComponent {
               <Button onClick={this.openAddPatientModal}>
                 Добавить пациента
               </Button>
-              <Button>Шаблон группы событий</Button>
+              <Button onClick={this.openAddEventTemplateModal}>
+                Шаблон группы событий
+              </Button>
             </div>
           </div>
 

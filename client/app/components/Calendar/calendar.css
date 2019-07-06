@@ -123,3 +123,7 @@ p {
 .patient-card:nth-of-type(1) {
   border-top: #f2dede solid 1px;
 }
+
+.templateModal {
+  max-width: 500px;
+}

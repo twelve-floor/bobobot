@@ -22,14 +22,13 @@ module.exports = app => {
   });
 
   app.post('/api/events/:patientId', authMiddleware, function(req, res, next) {
-    let eventArray = [];
+    const eventArray = [];
     for (let i = 0; i < req.body.length; i++) {
       const event = new Event({
         name: req.body[i].name,
         date: req.body[i].date,
         patient: req.params.patientId,
         doctor: req.userId,
-        parentEvent: req.body[i].parentEvent,
       });
       if (i >= 1) {
         event.parentEvent = eventArray[0]._id;

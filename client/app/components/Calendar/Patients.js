@@ -7,7 +7,7 @@ import IconButton from '@material-ui/core/IconButton';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import { ADD_EVENT, ADD_EVENT_TEMPLATE } from './constants';
+import { ADD_EVENT, CHOOSE_EVENTS_TEMPLATE } from './constants';
 
 export default class PatientsList extends PureComponent {
   state = {
@@ -64,6 +64,11 @@ export default class PatientsList extends PureComponent {
     this.props.makeCalendarSelectable();
   };
 
+  onAddMultipleEvents = () => {
+    this.setState({ anchorEl: null });
+    this.props.changeModalType(CHOOSE_EVENTS_TEMPLATE);
+  };
+
   render() {
     const patients = this.props.patients
       .filter(patient =>
@@ -90,7 +95,7 @@ export default class PatientsList extends PureComponent {
           onClose={this.handleClose}
         >
           <MenuItem onClick={this.onAddEvent}>Добавить событие</MenuItem>
-          <MenuItem onClick={this.handleClose}>
+          <MenuItem onClick={this.onAddMultipleEvents}>
             Добавить группу событий
           </MenuItem>
           <MenuItem onClick={this.handleClose}>Изменить</MenuItem>
