@@ -10,7 +10,7 @@ const isProd = NODE_ENV === 'production';
 const options = isProd
   ? {
       webHook: {
-        port: process.env.PORT,
+        port: 443,
       },
     }
   : { polling: true };
