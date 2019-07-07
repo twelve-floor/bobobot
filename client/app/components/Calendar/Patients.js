@@ -17,8 +17,10 @@ export default class PatientsList extends PureComponent {
   };
 
   onSelectPatient = patient => {
-    this.props.onPatientChange(patient);
-    this.setState({ selectedId: patient._id, searchTerm: '' });
+    if (this.props.clickable) {
+      this.props.onPatientChange(patient);
+      this.setState({ selectedId: patient._id, searchTerm: '' });
+    }
   };
 
   renderPatient = patient => {
@@ -33,7 +35,11 @@ export default class PatientsList extends PureComponent {
       <Card style={style} key={patient._id} onClick={onSelect}>
         <CardHeader
           action={
-            <IconButton aria-label="Settings" onClick={this.openMenu}>
+            <IconButton
+              aria-label="Settings"
+              onClick={this.openMenu}
+              disabled={!this.props.clickable}
+            >
               <MoreVertIcon />
             </IconButton>
           }
@@ -111,4 +117,5 @@ PatientsList.propTypes = {
   changeModalType: PropTypes.func.isRequired,
   onPatientChange: PropTypes.func.isRequired,
   patients: PropTypes.array.isRequired,
+  clickable: PropTypes.bool.isRequired,
 };

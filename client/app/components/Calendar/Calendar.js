@@ -78,7 +78,7 @@ class App extends PureComponent {
     patients: [],
     eventTemplates: [],
     selectedPatient: { _id: 'no_patient' },
-    selectable: false,
+    calendarIsSelectable: false,
     modalIsOpen: false,
   };
 
@@ -157,7 +157,7 @@ class App extends PureComponent {
     if (this.modalContentType === ADD_EVENT) {
       this.selectedDate = dateItem.start;
       this.setState({
-        selectable: false,
+        calendarIsSelectable: false,
         modalIsOpen: true,
       });
     }
@@ -186,7 +186,7 @@ class App extends PureComponent {
         .finally(() => this.setLoading(false));
 
       this.setState({
-        selectable: false,
+        calendarIsSelectable: false,
       });
     }
   };
@@ -199,7 +199,7 @@ class App extends PureComponent {
   };
 
   onSetSelectable = () => {
-    this.setState({ selectable: true });
+    this.setState({ calendarIsSelectable: true });
   };
 
   openAddPatientModal = () => {
@@ -238,7 +238,7 @@ class App extends PureComponent {
   onEventTemplateSelected = eventTemplate => {
     this.currentEventTemplate = eventTemplate;
     this.setState({
-      selectable: true,
+      calendarIsSelectable: true,
       modalIsOpen: false,
     });
   };
@@ -288,7 +288,7 @@ class App extends PureComponent {
   };
 
   render() {
-    const calendarWrapperClass = this.state.selectable
+    const calendarWrapperClass = this.state.calendarIsSelectable
       ? 'calendar-wrapper-selectable'
       : 'calendar-wrapper';
     const style = this.state.loading ? {} : { marginTop: 4 };
@@ -302,13 +302,20 @@ class App extends PureComponent {
               changeModalType={this.onSetModalType}
               onPatientChange={this.onPatientChange}
               patients={this.state.patients}
+              clickable={!this.state.calendarIsSelectable}
             />
 
             <div className="button-container">
-              <Button onClick={this.openAddPatientModal}>
+              <Button
+                onClick={this.openAddPatientModal}
+                disabled={this.state.calendarIsSelectable}
+              >
                 Добавить пациента
               </Button>
-              <Button onClick={this.openAddEventTemplateModal}>
+              <Button
+                onClick={this.openAddEventTemplateModal}
+                disabled={this.state.calendarIsSelectable}
+              >
                 Шаблон группы событий
               </Button>
             </div>
@@ -316,7 +323,7 @@ class App extends PureComponent {
 
           <div className={calendarWrapperClass}>
             <DnDCalendar
-              selectable={this.state.selectable}
+              selectable={this.state.calendarIsSelectable}
               defaultDate={new Date()}
               defaultView="month"
               events={this.state.events}
