@@ -4,8 +4,8 @@ const Patient = require('../server/models/Patient');
 const token = process.env.BOT_TOKEN;
 
 const NODE_ENV = process.env.NODE_ENV;
-// const isProd = NODE_ENV === 'production';
-const isProd = false;
+const isProd = NODE_ENV === 'production';
+// const isProd = false;
 
 const options = isProd
   ? {
