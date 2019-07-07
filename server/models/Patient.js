@@ -10,6 +10,10 @@ const PatientSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  telegramId: {
+    type: String,
+    required: false,
+  },
   email: {
     type: String,
     trim: true,
