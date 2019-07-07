@@ -158,7 +158,9 @@ export default function AddEventTemplateModal(props) {
           </Button>
         </Grid>
         <Grid item xs={12}>
-          <Button onClick={onAddEventTemplate}>Создать шаблон</Button>
+          <Button onClick={onAddEventTemplate} color="primary">
+            Создать шаблон
+          </Button>
           <Button onClick={props.closeModal}>Отмена</Button>
         </Grid>
       </Grid>

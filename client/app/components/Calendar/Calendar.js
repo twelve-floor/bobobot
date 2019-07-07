@@ -10,6 +10,8 @@ import Button from '@material-ui/core/Button';
 
 import AddPatientModal from './AddPatientModal';
 import AddEventModal from './AddEventModal';
+import EditPatientModal from './EditPatientModal';
+import EditEventModal from './EditEventModal';
 import AddEventTemplateModal from './AddEventTemplateModal';
 import SelectEventTemplateModal from './SelectEventTemplateModal';
 import Patients from './Patients';
@@ -18,8 +20,11 @@ import { eventConverter } from './helpers';
 import {
   ADD_EVENT,
   ADD_PATIENT,
+  EDIT_PATIENT,
   ADD_EVENT_TEMPLATE,
   CHOOSE_EVENTS_TEMPLATE,
+  ALL_PATIENTS_ID,
+  EDIT_EVENT,
 } from './constants';
 import './calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
@@ -41,8 +46,6 @@ const customStyles = {
 };
 
 Modal.setAppElement('#app');
-
-const ALL_PATIENTS_ID = 'all_patients';
 
 const createEventsFromTemplate = (date, template) => {
   const eventsWithDifference = template.events.map((current, index) => {
@@ -111,7 +114,24 @@ class CalendarApp extends PureComponent {
       .catch(err => alert(err));
   }
 
-  onEventDrop = ({ event, start, end, allDay }) => {
+  onEventUpdated = rawUpdatedEvent => {
+    const events = this.state.events.map(event => {
+      if (event.id === rawUpdatedEvent._id) {
+        return eventConverter(rawUpdatedEvent);
+      }
+      return event;
+    });
+    this.setState({ events, modalIsOpen: false });
+  };
+
+  onEventRemoved = removedEventId => {
+    const events = this.state.events.filter(
+      event => event.id !== removedEventId
+    );
+    this.setState({ events, modalIsOpen: false });
+  };
+
+  onEventDrop = ({ event, start }) => {
     const token = localStorage.getItem('token');
     const updatedEvent = {
       name: event.title,
@@ -124,17 +144,7 @@ class CalendarApp extends PureComponent {
         headers: { token: token },
       })
       .then(() => {
-        const events = this.state.events.map(event => {
-          if (event.id === updatedEvent._id) {
-            return {
-              ...event,
-              start,
-              end: start,
-            };
-          }
-          return event;
-        });
-        this.setState({ events });
+        this.onEventUpdated(updatedEvent);
       })
       .finally(() => this.setState({ loading: false }));
   };
@@ -210,7 +220,7 @@ class CalendarApp extends PureComponent {
 
   onSetModalType = modalType => {
     this.modalContentType = modalType;
-    if (modalType === CHOOSE_EVENTS_TEMPLATE) {
+    if ([EDIT_PATIENT, CHOOSE_EVENTS_TEMPLATE].includes(modalType)) {
       this.setState({ modalIsOpen: true });
     }
   };
@@ -260,48 +270,80 @@ class CalendarApp extends PureComponent {
     });
   };
 
-  renderModalContent = () => {
-    if (this.modalContentType === ADD_PATIENT) {
-      return (
-        <AddPatientModal
-          closeModal={this.closeModal}
-          patientAdded={this.onPatientAdded}
-          setLoading={this.setLoading}
-        />
-      );
-    }
-    if (this.modalContentType === ADD_EVENT) {
-      return (
-        <AddEventModal
-          closeModal={this.closeModal}
-          patientId={this.state.selectedPatient._id}
-          date={this.selectedDate}
-          eventsAdded={this.onEventsAdded}
-          setLoading={this.setLoading}
-        />
-      );
-    }
-    if (this.modalContentType === ADD_EVENT_TEMPLATE) {
-      return (
-        <AddEventTemplateModal
-          closeModal={this.closeModal}
-          patientId={this.state.selectedPatient._id}
-          date={this.selectedDate}
-          eventsTemplateAdded={this.onEventsTemplateAdded}
-          setLoading={this.setLoading}
-        />
-      );
-    }
+  onPatientEdited = editedPatient => {
+    const newEditedPatient = {
+      ...this.state.selectedPatient,
+      ...editedPatient,
+    };
+    const patients = this.state.patients.map(patient => {
+      if (patient._id === this.state.selectedPatient._id) {
+        return newEditedPatient;
+      }
+      return patient;
+    });
+    this.setState({
+      patients,
+      selectedPatient: newEditedPatient,
+    });
+    this.closeModal();
+  };
 
-    if (this.modalContentType === CHOOSE_EVENTS_TEMPLATE) {
-      return (
-        <SelectEventTemplateModal
-          closeModal={this.closeModal}
-          onEventTemplateSelected={this.onEventTemplateSelected}
-          eventTemplates={this.state.eventTemplates}
-        />
-      );
-    }
+  onEditEvent = event => {
+    this.modalContentType = EDIT_EVENT;
+    this.currentEvent = event;
+    this.setState({ modalIsOpen: true });
+  };
+
+  modals = {
+    [EDIT_EVENT]: () => (
+      <EditEventModal
+        event={this.currentEvent}
+        closeModal={this.closeModal}
+        setLoading={this.setLoading}
+        eventEdited={this.onEventUpdated}
+        eventRemoved={this.onEventRemoved}
+      />
+    ),
+    [EDIT_PATIENT]: () => (
+      <EditPatientModal
+        closeModal={this.closeModal}
+        patientEdited={this.onPatientEdited}
+        setLoading={this.setLoading}
+        patient={this.state.selectedPatient}
+      />
+    ),
+    [ADD_PATIENT]: () => (
+      <AddPatientModal
+        closeModal={this.closeModal}
+        patientAdded={this.onPatientAdded}
+        setLoading={this.setLoading}
+      />
+    ),
+    [ADD_EVENT]: () => (
+      <AddEventModal
+        closeModal={this.closeModal}
+        patientId={this.state.selectedPatient._id}
+        date={this.selectedDate}
+        eventsAdded={this.onEventsAdded}
+        setLoading={this.setLoading}
+      />
+    ),
+    [ADD_EVENT_TEMPLATE]: () => (
+      <AddEventTemplateModal
+        closeModal={this.closeModal}
+        patientId={this.state.selectedPatient._id}
+        date={this.selectedDate}
+        eventsTemplateAdded={this.onEventsTemplateAdded}
+        setLoading={this.setLoading}
+      />
+    ),
+    [CHOOSE_EVENTS_TEMPLATE]: () => (
+      <SelectEventTemplateModal
+        closeModal={this.closeModal}
+        onEventTemplateSelected={this.onEventTemplateSelected}
+        eventTemplates={this.state.eventTemplates}
+      />
+    ),
   };
 
   render() {
@@ -309,9 +351,8 @@ class CalendarApp extends PureComponent {
       ? 'calendar-wrapper-selectable'
       : 'calendar-wrapper';
     const style = this.state.loading ? {} : { marginTop: 4 };
-    const components = {
-      toolbar: () => <div>asd</div>,
-    };
+    const modalContent =
+      this.modalContentType && this.modals[this.modalContentType]();
     return (
       <>
         {this.state.loading && <LinearProgress />}
@@ -353,7 +394,7 @@ class CalendarApp extends PureComponent {
               style={{ height: '90vh' }}
               views={['month', 'agenda']}
               onSelectSlot={this.onDateSelected}
-              onSelectEvent={e => console.log(e)}
+              onDoubleClickEvent={this.onEditEvent}
             />
           </div>
         </div>
@@ -364,7 +405,7 @@ class CalendarApp extends PureComponent {
           style={customStyles}
           contentLabel="Modal"
         >
-          {this.renderModalContent()}
+          {modalContent}
         </Modal>
       </>
     );

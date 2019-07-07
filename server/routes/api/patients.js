@@ -29,17 +29,12 @@ module.exports = app => {
   });
 
   app.put('/api/patients/:id', authMiddleware, (req, res, next) => {
-    Patient.findById(req.params.id)
-      .exec()
-      .then(patient => {
-        patient.name = req.body.name;
-        patient.age = req.body.age;
-        patient.email = req.body.email;
-
-        patient
-          .save()
-          .then(() => res.json(patient))
-          .catch(err => next(err));
+    Patient.findByIdAndUpdate(req.params.id, {
+      name: req.body.name,
+      phoneNumber: req.body.phoneNumber,
+    })
+      .then(() => {
+        res.send(req.body);
       })
       .catch(err => next(err));
   });

@@ -7,7 +7,12 @@ import IconButton from '@material-ui/core/IconButton';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import { ADD_EVENT, CHOOSE_EVENTS_TEMPLATE } from './constants';
+import {
+  ADD_EVENT,
+  CHOOSE_EVENTS_TEMPLATE,
+  EDIT_PATIENT,
+  ALL_PATIENTS_ID,
+} from './constants';
 
 export default class PatientsList extends PureComponent {
   state = {
@@ -31,18 +36,20 @@ export default class PatientsList extends PureComponent {
 
     const onSelect = () => this.onSelectPatient(patient);
 
+    const action = patient._id !== ALL_PATIENTS_ID && (
+      <IconButton
+        aria-label="Settings"
+        onClick={this.openMenu}
+        disabled={!this.props.clickable}
+      >
+        <MoreVertIcon />
+      </IconButton>
+    );
+
     return (
       <Card style={style} key={patient._id} onClick={onSelect}>
         <CardHeader
-          action={
-            <IconButton
-              aria-label="Settings"
-              onClick={this.openMenu}
-              disabled={!this.props.clickable}
-            >
-              <MoreVertIcon />
-            </IconButton>
-          }
+          action={action}
           title={patient.name}
           subheader={patient.phoneNumber}
         />
@@ -75,6 +82,11 @@ export default class PatientsList extends PureComponent {
     this.props.changeModalType(CHOOSE_EVENTS_TEMPLATE);
   };
 
+  onEditPatient = () => {
+    this.setState({ anchorEl: null });
+    this.props.changeModalType(EDIT_PATIENT);
+  };
+
   render() {
     const patients = this.props.patients
       .filter(patient =>
@@ -104,8 +116,10 @@ export default class PatientsList extends PureComponent {
           <MenuItem onClick={this.onAddMultipleEvents}>
             Добавить группу событий
           </MenuItem>
-          <MenuItem onClick={this.handleClose}>Изменить</MenuItem>
-          <MenuItem onClick={this.handleClose}>Удалить</MenuItem>
+          <MenuItem onClick={this.onEditPatient}>Изменить</MenuItem>
+          <MenuItem onClick={this.handleClose} disabled>
+            Удалить
+          </MenuItem>
         </Menu>
       </div>
     );

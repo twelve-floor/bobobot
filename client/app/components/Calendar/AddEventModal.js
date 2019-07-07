@@ -60,7 +60,9 @@ export default function AddEventModal(props) {
         </Grid>
 
         <Grid item xs={12}>
-          <Button onClick={onAddEvent}>Добавить</Button>
+          <Button onClick={onAddEvent} color="primary">
+            Добавить
+          </Button>
           <Button onClick={props.closeModal}>Отмена</Button>
         </Grid>
       </Grid>
