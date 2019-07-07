@@ -1,12 +1,28 @@
 const TelegramBot = require('node-telegram-bot-api');
-const Event = require('../server/models/Event');
 const Patient = require('../server/models/Patient');
 
-const token = '836564131:AAGvDqFDA1NYGjN3i_ltdYYrZk2Hjixy1fU';
-const bot = new TelegramBot(token, { polling: true });
+const token = process.env.BOT_TOKEN;
 
-bot.onText(/^\/отправить телефон/, function(msg, match) {
-  var option = {
+const NODE_ENV = process.env.NODE_ENV;
+const isProd = NODE_ENV === 'production';
+
+const options = isProd
+  ? {
+      webHook: {
+        port: process.env.PORT,
+      },
+    }
+  : { polling: true };
+
+const bot = new TelegramBot(token, options);
+
+if (isProd) {
+  const url = process.env.APP_URL || 'https://<app-name>.herokuapp.com:443';
+  bot.setWebHook(`${url}/bot${TOKEN}`);
+}
+
+bot.onText(/\/start/, function(msg) {
+  const option = {
     parse_mode: 'Markdown',
     reply_markup: {
       one_time_keyboard: true,
@@ -25,31 +41,30 @@ bot.onText(/^\/отправить телефон/, function(msg, match) {
 });
 
 bot.on('contact', msg => {
-  const contact = msg.contact.phone_number;
-  Patient.findOne({ phoneNumber: contact })
-    .exec()
-    .then(patient => {
-      patient.telegramId = msg.chat.id;
-      patient.save().catch(err => next(err));
-    });
+  let phoneNumber = msg.contact.phone_number.replace(/ /g, '');
+  if (phoneNumber.startsWith('8')) {
+    phoneNumber = phoneNumber.replace('8', '+7');
+  }
+  if (phoneNumber.length === 11 && phoneNumber.startsWith('7')) {
+    phoneNumber = phoneNumber.replace('7', '+7');
+  }
+  console.log({ phoneNumber });
 
-  bot.sendMessage(msg.chat.id, 'Номер получен', {
-    reply_markup: {
-      remove_keyboard: true,
-    },
-  });
-});
-
-let date = new Date();
-let dateForSearch =
-  date.getFullYear() + '/' + date.getMonth() + '/' + date.getDate();
-
-Event.find({ date: dateForSearch })
-  .populate('patient')
-  .then(function(result) {
-    for (let item of result) {
-      bot.sendMessage(item.patient.telegramId, item.name);
+  Patient.findOneAndUpdate(
+    { phoneNumber },
+    { $set: { telegramId: msg.chat.id } },
+    (err, doc) => {
+      const message =
+        err || !doc
+          ? 'Номер не найден, попросите вашего врача добавить ваш номер в базу'
+          : 'Номер сохранен';
+      bot.sendMessage(msg.chat.id, message, {
+        reply_markup: {
+          remove_keyboard: true,
+        },
+      });
     }
-  });
+  );
+});
 
 module.exports = bot;

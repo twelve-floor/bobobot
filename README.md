@@ -9,11 +9,13 @@ npm install
 ```
 
 - Install [MongoDB](https://docs.mongodb.com/manual/administration/install-community/)
-- create `.env` file and add 
-    - `DB_URL = <your_mongo_url>`
-    - `BOT_TOKEN = <telegram_bot_token>`
-    - `JWT_SECRET = <random string>`
-
+- create `.env` file and add
+  - `DB_URL = <your_mongo_url>`
+  - `BOT_TOKEN = <telegram_bot_token>`
+  - `JWT_SECRET = <random string>`
+  - `APP_URL = 'https://<app-name>.herokuapp.com:443'` - this is required for production only
+  - `ADMIN_TG_ID = <user id of admin's telegram>`
+  - `CRON_SERVICE_SECRET_TOKEN = some token for cron service to access bot via /api/checkDates?cronToken=`
 
 ## Running
 
@@ -29,8 +31,8 @@ Production mode:
 npm start
 ```
 
-
 Project is created using [MERN boilerplate](https://github.com/keithweaver/MERN-boilerplate) with following technologies:
+
 - [React](https://facebook.github.io/react/) and [React Router](https://reacttraining.com/react-router/) for the frontend
 - [Express](http://expressjs.com/) and [Mongoose](http://mongoosejs.com/) for the backend
 - [Sass](http://sass-lang.com/) for styles (using the SCSS syntax)

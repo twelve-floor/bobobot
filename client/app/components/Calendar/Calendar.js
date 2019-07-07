@@ -346,6 +346,11 @@ class CalendarApp extends PureComponent {
     ),
   };
 
+  onSignout = () => {
+    localStorage.removeItem('token');
+    this.props.history.push('/');
+  };
+
   render() {
     const calendarWrapperClass = this.state.calendarIsSelectable
       ? 'calendar-wrapper-selectable'
@@ -378,6 +383,9 @@ class CalendarApp extends PureComponent {
                 disabled={this.state.calendarIsSelectable}
               >
                 Шаблон группы событий
+              </Button>
+              <Button onClick={this.onSignout} color="secondary">
+                Выйти
               </Button>
             </div>
           </div>
