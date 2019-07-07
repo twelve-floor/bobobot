@@ -1,32 +1,60 @@
 const TelegramBot = require('node-telegram-bot-api');
+const Event = require('../server/models/Event');
+const Patient = require('../server/models/Patient');
 
-// replace the value below with the Telegram token you receive from @BotFather
 const token = '836564131:AAGvDqFDA1NYGjN3i_ltdYYrZk2Hjixy1fU';
 
-// Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
 
-// Matches "/echo [whatever]"
-bot.onText(/\/hi/, (msg, match) => {
-  // 'msg' is the received Message from Telegram
-  // 'match' is the result of executing the regexp above on the text content
-  // of the message
+bot.onText(/^\/отправить телефон/, function(msg, match) {
+  var option = {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      one_time_keyboard: true,
+      keyboard: [
+        [
+          {
+            text: 'Отравить телефон',
+            request_contact: true,
+          },
+        ],
+      ],
+    },
+  };
 
-  const chatId = msg.chat.id;
-  const resp = 'response for hi'; // the captured "whatever"
-
-  // send back the matched "whatever" to the chat
-  bot.sendMessage(chatId, resp);
+  bot
+    .sendMessage(msg.chat.id, 'Нажмите кнопку отправить телефон', option)
+    .then(() => {
+      // handle user phone]
+    });
 });
 
-// Listen for any kind of message. There are different kinds of
-// messages.
-bot.on('message', msg => {
-  const chatId = msg.chat.id;
+bot.on('contact', msg => {
+  const contact = msg.contact.phone_number;
+  Patient.findOne({ phoneNumber: contact })
+    .exec()
+    .then(patient => {
+      patient.telegramId = msg.chat.id;
+      patient.save().catch(err => next(err));
+    });
 
-  // send a message to the chat acknowledging receipt of their message
-  bot.sendMessage(chatId, 'Received your message');
-  console.log(chatId);
+  bot.sendMessage(msg.chat.id, 'Номер получен', {
+    reply_markup: {
+      remove_keyboard: true,
+    },
+  });
 });
+
+let date = new Date();
+let dateForSearch =
+  date.getFullYear() + '/' + date.getMonth() + '/' + date.getDate();
+
+Event.find({ date: dateForSearch })
+  .populate('patient')
+  .then(function(result) {
+    for (let item of result) {
+      bot.sendMessage(item.patient.telegramId, item.name);
+    }
+  });
 
 module.exports = bot;
