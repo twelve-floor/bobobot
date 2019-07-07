@@ -47,22 +47,14 @@ module.exports = app => {
       .catch(err => next(err));
   });
 
-  app.put('/api/events/', authMiddleware, (req, res, next) => {
-    req.body.forEach(element => {
-      Event.findById(element._id)
-        .exec()
-        .then(event => {
-          event.name = element.name;
-          event.date = element.date;
-          event.patient = element.patient;
-          event.doctor = element.doctor;
-          event.parentEvent = element.parentEvent;
-          event.sent = element.sent;
-
-          event.save().catch(err => next(err));
-        })
-        .catch(err => next(err));
-    });
-    res.json('ok');
+  app.put('/api/events', authMiddleware, (req, res, next) => {
+    const allEventPromises = req.body.map(element =>
+      Event.findByIdAndUpdate(element._id, element)
+    );
+    Promise.all(allEventPromises)
+      .then(() => {
+        res.send('ok');
+      })
+      .catch(err => next(err));
   });
 };

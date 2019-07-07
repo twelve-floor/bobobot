@@ -25,6 +25,7 @@ import './calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
+moment.locale('ru');
 const localizer = Calendar.momentLocalizer(moment);
 const DnDCalendar = withDragAndDrop(Calendar);
 
@@ -72,7 +73,7 @@ const createEventsFromTemplate = (date, template) => {
   return items;
 };
 
-class App extends PureComponent {
+class CalendarApp extends PureComponent {
   state = {
     events: [],
     patients: [],
@@ -110,16 +111,32 @@ class App extends PureComponent {
       .catch(err => alert(err));
   }
 
-  onEventResize = (type, { event, start, end, allDay }) => {
-    this.setState(state => {
-      state.events[0].start = start;
-      state.events[0].end = end;
-      return { events: state.events };
-    });
-  };
-
   onEventDrop = ({ event, start, end, allDay }) => {
-    console.log({ event, start, end, allDay });
+    const token = localStorage.getItem('token');
+    const updatedEvent = {
+      name: event.title,
+      _id: event.id,
+      date: start,
+    };
+    this.setState({ loading: true });
+    axios
+      .put(`/api/events`, [updatedEvent], {
+        headers: { token: token },
+      })
+      .then(() => {
+        const events = this.state.events.map(event => {
+          if (event.id === updatedEvent._id) {
+            return {
+              ...event,
+              start,
+              end: start,
+            };
+          }
+          return event;
+        });
+        this.setState({ events });
+      })
+      .finally(() => this.setState({ loading: false }));
   };
 
   onPatientChange = patient => {
@@ -292,6 +309,9 @@ class App extends PureComponent {
       ? 'calendar-wrapper-selectable'
       : 'calendar-wrapper';
     const style = this.state.loading ? {} : { marginTop: 4 };
+    const components = {
+      toolbar: () => <div>asd</div>,
+    };
     return (
       <>
         {this.state.loading && <LinearProgress />}
@@ -329,11 +349,11 @@ class App extends PureComponent {
               events={this.state.events}
               localizer={localizer}
               onEventDrop={this.onEventDrop}
-              onEventResize={this.onEventResize}
               className="calendar"
               style={{ height: '90vh' }}
               views={['month', 'agenda']}
               onSelectSlot={this.onDateSelected}
+              onSelectEvent={e => console.log(e)}
             />
           </div>
         </div>
@@ -351,4 +371,4 @@ class App extends PureComponent {
   }
 }
 
-export default App;
+export default CalendarApp;
