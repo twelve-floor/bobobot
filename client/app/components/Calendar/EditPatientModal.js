@@ -5,6 +5,7 @@ import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import axios from 'axios';
+import InputMask from 'react-input-mask';
 
 EditPatientModal.propTypes = {
   setLoading: PropTypes.func.isRequired,
@@ -36,12 +37,18 @@ export default function EditPatientModal(props) {
       alert('Введите имя и номер телефона');
       return;
     }
+    const phoneClean = newPatientPhone.replace(/ |_/g, '');
+    if (phoneClean.length !== 12) {
+      alert('Введите правильный телефон');
+      return;
+    }
+
     const token = localStorage.getItem('token');
     props.setLoading(true);
     axios
       .put(
         `/api/patients/${props.patient._id}`,
-        { name: newPatientName, phoneNumber: newPatientPhone },
+        { name: newPatientName, phoneNumber: phoneClean },
         { headers: { token: token } }
       )
       .then(res => {
@@ -69,17 +76,15 @@ export default function EditPatientModal(props) {
           />
         </Grid>
         <Grid item xs={12}>
-          <TextField
-            variant="outlined"
-            required
-            fullWidth
-            id="phone"
-            label="Телефон"
-            name="phone"
-            data-lpignore="true"
-            value={newPatientPhone}
-            onChange={onUpdatePhone}
-          />
+          <div className="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl">
+            <InputMask
+              placeholder="Номер телефона"
+              className="MuiInputBase-input MuiOutlinedInput-input"
+              mask="+7 999 999 9999"
+              value={newPatientPhone}
+              onChange={onUpdatePhone}
+            />
+          </div>
         </Grid>
         <Grid item xs={12}>
           <Button onClick={onEditPatient} color="primary">
