@@ -3,7 +3,6 @@ const Event = require('../server/models/Event');
 const Patient = require('../server/models/Patient');
 
 const token = '836564131:AAGvDqFDA1NYGjN3i_ltdYYrZk2Hjixy1fU';
-
 const bot = new TelegramBot(token, { polling: true });
 
 bot.onText(/^\/отправить телефон/, function(msg, match) {
@@ -22,11 +21,7 @@ bot.onText(/^\/отправить телефон/, function(msg, match) {
     },
   };
 
-  bot
-    .sendMessage(msg.chat.id, 'Нажмите кнопку отправить телефон', option)
-    .then(() => {
-      // handle user phone]
-    });
+  bot.sendMessage(msg.chat.id, 'Нажмите кнопку отправить телефон', option);
 });
 
 bot.on('contact', msg => {
