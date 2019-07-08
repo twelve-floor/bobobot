@@ -20,7 +20,8 @@ const adminId = process.env.ADMIN_TG_ID;
 const port = process.env.PORT || 8080;
 const token = process.env.BOT_TOKEN;
 
-const tunnelUrl = process.env.APP_URL || 'https://proud-dog-72.localtunnel.me';
+const tunnelUrl =
+  process.env.APP_URL || 'https://lovely-bulldog-67.localtunnel.me';
 const urlForWebhook = `${tunnelUrl}/bot`;
 
 const apiUrl = `https://api.telegram.org/bot${token}`;
