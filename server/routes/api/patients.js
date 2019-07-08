@@ -27,9 +27,11 @@ module.exports = app => {
       }
       if (!user.patients.includes(patient._id)) {
         user.patients.push(patient);
+        await user.save();
+        res.json(patient);
+      } else {
+        res.json(null);
       }
-      await user.save();
-      res.json(patient);
     } catch (error) {
       next(error);
     }

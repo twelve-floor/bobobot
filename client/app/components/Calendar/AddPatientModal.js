@@ -44,7 +44,12 @@ export default function AddPatientModal(props) {
         { headers: { token: token } }
       )
       .then(res => {
-        props.patientAdded(res.data);
+        if (res.data != null) {
+          props.patientAdded(res.data);
+        } else {
+          alert('Пациент уже добавлен');
+          props.closeModal();
+        }
       })
       .catch(er => alert(er))
       .finally(() => props.setLoading(false));
