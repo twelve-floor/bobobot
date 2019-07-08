@@ -65,8 +65,8 @@ const createEventsFromTemplate = (date, template) => {
   let tempDate = moment(date);
   const items = eventsWithDifference.map(eventWithDelta => {
     tempDate.add(eventWithDelta.daysDelta, 'day');
-    if (tempDate.weekday() > 5) {
-      tempDate.add(8 - tempDate.weekday(), 'day');
+    if (tempDate.weekday() > 4) {
+      tempDate.add(7 - tempDate.weekday(), 'day');
     }
     return {
       name: eventWithDelta.name,
@@ -384,7 +384,11 @@ class CalendarApp extends PureComponent {
               >
                 Шаблон группы событий
               </Button>
-              <Button onClick={this.onSignout} color="secondary">
+              <Button
+                onClick={this.onSignout}
+                color="secondary"
+                disabled={this.state.calendarIsSelectable}
+              >
                 Выйти
               </Button>
             </div>
