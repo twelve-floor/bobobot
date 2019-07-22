@@ -47,7 +47,12 @@ export default class PatientsList extends PureComponent {
     );
 
     return (
-      <Card style={style} key={patient._id} onClick={onSelect}>
+      <Card
+        style={style}
+        key={patient._id}
+        onClick={onSelect}
+        className="patient-card"
+      >
         <CardHeader
           action={action}
           title={patient.name}
@@ -96,10 +101,10 @@ export default class PatientsList extends PureComponent {
 
     return (
       <div className="patients-container">
-        <TextField
-          variant="outlined"
-          fullWidth
-          label="Искать пациента"
+        <input
+          className="search-field"
+          type="text"
+          placeholder="Искать пациента"
           value={this.state.searchTerm}
           onChange={this.onSearchTermChange}
         />
@@ -112,12 +117,16 @@ export default class PatientsList extends PureComponent {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose}
         >
-          <MenuItem onClick={this.onAddEvent}>Добавить событие</MenuItem>
-          <MenuItem onClick={this.onAddMultipleEvents}>
+          <MenuItem onClick={this.onAddEvent} className="menu-item">
+            Добавить событие
+          </MenuItem>
+          <MenuItem onClick={this.onAddMultipleEvents} className="menu-item">
             Добавить группу событий
           </MenuItem>
-          <MenuItem onClick={this.onEditPatient}>Изменить</MenuItem>
-          <MenuItem onClick={this.handleClose} disabled>
+          <MenuItem onClick={this.onEditPatient} className="menu-item">
+            Изменить
+          </MenuItem>
+          <MenuItem onClick={this.handleClose} disabled className="menu-item">
             Удалить
           </MenuItem>
         </Menu>

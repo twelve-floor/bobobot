@@ -1,6 +1,31 @@
+@media only screen and (max-device-width: 900px) and (orientation: landscape) {
+  html {
+    font-size: 0.4rem;
+  }
+
+  .rbc-btn-group > button {
+    font-size: 12px;
+  }
+
+  .patient-card .MuiCardHeader-root {
+    padding: 0px;
+  }
+
+  li.menu-item {
+    min-height: 20px;
+    padding: 4px 8px;
+  }
+}
+
+.search-field {
+  width: 90%;
+  padding: 5px;
+}
+
 .App {
   display: flex;
   position: relative;
+  max-width: 100%;
 }
 
 .ReactModal__Overlay {
