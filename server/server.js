@@ -21,7 +21,7 @@ const port = process.env.PORT || 8080;
 const token = process.env.BOT_TOKEN;
 
 const tunnelUrl =
-  process.env.APP_URL || 'https://lovely-bulldog-67.localtunnel.me';
+  process.env.APP_URL || 'https://strange-lion-93.localtunnel.me';
 const urlForWebhook = `${tunnelUrl}/bot`;
 
 const apiUrl = `https://api.telegram.org/bot${token}`;
@@ -44,11 +44,13 @@ require('./routes')(app);
 
 app.get('/api/checkDates', (req, res, next) => {
   if (req.query.cronToken === cronToken) {
-    const today = moment().startOf('day');
+    const tomorrow = moment()
+      .add(1, 'd')
+      .startOf('day');
     Event.find({
       date: {
-        $gte: today.toDate(),
-        $lte: moment(today)
+        $gte: tomorrow.toDate(),
+        $lte: moment(tomorrow)
           .endOf('day')
           .toDate(),
       },
