@@ -152,3 +152,12 @@ p {
 .templateModal {
   max-width: 500px;
 }
+
+.date-cell {
+  border: 2px solid #ebd2d245;
+  width: 100%;
+}
+
+.date-cell:active {
+  background-color: #bfa47057;
+}

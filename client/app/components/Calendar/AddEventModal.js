@@ -5,6 +5,7 @@ import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import axios from 'axios';
+import moment from 'moment';
 
 AddEventModal.propTypes = {
   eventsAdded: PropTypes.func.isRequired,
@@ -45,7 +46,7 @@ export default function AddEventModal(props) {
 
   return (
     <>
-      <h2>Добавить событие</h2>
+      <h2>Добавить событие на {moment(props.date).format('Do MMM')}</h2>
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <TextField

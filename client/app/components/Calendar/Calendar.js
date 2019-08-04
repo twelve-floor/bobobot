@@ -358,6 +358,18 @@ class CalendarApp extends PureComponent {
     const style = this.state.loading ? {} : { marginTop: 4 };
     const modalContent =
       this.modalContentType && this.modals[this.modalContentType]();
+
+    const dateCellWrapper = props => (
+      <div
+        onClick={() => {
+          if (this.state.calendarIsSelectable) {
+            this.onDateSelected({ start: props.value });
+          }
+        }}
+        className="date-cell"
+      />
+    );
+
     return (
       <>
         {this.state.loading && <LinearProgress />}
@@ -405,8 +417,8 @@ class CalendarApp extends PureComponent {
               className="calendar"
               style={{ height: '90vh' }}
               views={['month', 'agenda']}
-              onSelectSlot={this.onDateSelected}
               onDoubleClickEvent={this.onEditEvent}
+              components={{ dateCellWrapper }}
             />
           </div>
         </div>
