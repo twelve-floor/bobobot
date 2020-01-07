@@ -46,7 +46,7 @@ export default function SignUp(props) {
   const [email, setEmail] = useState('');
   const [telegramId, setTelegramId] = useState('');
   const [password, setPassword] = useState('');
-  console.log(process.env);
+
   function handleSuccess(res) {
     localStorage.setItem('token', res.data.token);
     props.history.push('/calendar');
