@@ -6,6 +6,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  telegramId: {
+    type: String,
+    required: true,
+  },
   email: {
     type: mongoose.SchemaTypes.Email,
     required: true,

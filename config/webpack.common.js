@@ -89,6 +89,9 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify(NODE_ENV),
+        BOT_NAME: JSON.stringify(
+          process.env.BOT_NAME || 'no_BOT_NAME_specified'
+        ),
       },
     }),
 

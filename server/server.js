@@ -17,11 +17,10 @@ const webpackConfig = require('../webpack.config');
 const isDev = process.env.NODE_ENV !== 'production';
 const cronToken = process.env.CRON_SERVICE_SECRET_TOKEN;
 const adminId = process.env.ADMIN_TG_ID;
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 3000;
 const token = process.env.BOT_TOKEN;
 
-const tunnelUrl =
-  process.env.APP_URL || 'https://strange-lion-93.localtunnel.me';
+const tunnelUrl = process.env.APP_URL || 'https://7c6cd916.ngrok.io';
 const urlForWebhook = `${tunnelUrl}/bot`;
 
 const apiUrl = `https://api.telegram.org/bot${token}`;
@@ -43,31 +42,47 @@ app.use(express.json());
 require('./routes')(app);
 
 app.get('/api/checkDates', (req, res, next) => {
-  if (req.query.cronToken === cronToken) {
-    const tomorrow = moment()
-      .add(1, 'd')
-      .startOf('day');
-    Event.find({
-      date: {
-        $gte: tomorrow.toDate(),
-        $lte: moment(tomorrow)
-          .endOf('day')
-          .toDate(),
-      },
-    })
-      .populate('patient')
-      .then(result => {
-        const message = `👌 notifications sent: ${result.length} 👌`;
-        res.send(message);
-        result.forEach(item => {
-          bot.sendMessage(item.patient.telegramId, item.name);
-        });
-        bot.sendMessage(adminId, message);
-      })
-      .catch(err => next(err));
-  } else {
+  if (req.query.cronToken !== cronToken) {
     res.send('Invalid token');
   }
+  // getting all Events for tomorrow
+  const tomorrow = moment()
+    .add(1, 'd')
+    .startOf('day');
+  Event.find({
+    date: {
+      $gte: tomorrow.toDate(),
+      $lte: moment(tomorrow)
+        .endOf('day')
+        .toDate(),
+    },
+  })
+    .populate('patient')
+    .populate('doctor', 'telegramId')
+    .then(result => {
+      const patientsForDoctor = {};
+      result.forEach(item => {
+        bot.sendMessage(item.patient.telegramId, item.name);
+        // saving Data for each event per Doctor
+        if (item.doctor.telegramId) {
+          if (!patientsForDoctor[item.doctor.telegramId]) {
+            patientsForDoctor[item.doctor.telegramId] = [];
+          }
+          patientsForDoctor[item.doctor.telegramId].push(
+            `${item.patient.name}: "${item.name}"`
+          );
+        }
+      });
+
+      for (const doctorTelegramId in patientsForDoctor) {
+        const message = `Отправил уведомления пациентам:\n${patientsForDoctor[
+          doctorTelegramId
+        ].join('\n')}`;
+        bot.sendMessage(doctorTelegramId, message);
+      }
+      res.send('OK');
+    })
+    .catch(err => next(err));
 });
 
 app.post('/bot', (req, res) => {
@@ -77,6 +92,11 @@ app.post('/bot', (req, res) => {
   if (text === '/start') {
     bot.askForPhone(chat.id);
   }
+
+  if (text === '/start info') {
+    bot.sendMessage(chat.id, `Ваш Telegram ID: ${chat.id}`);
+  }
+
   if (contact) {
     bot.handlePhone(message);
   }

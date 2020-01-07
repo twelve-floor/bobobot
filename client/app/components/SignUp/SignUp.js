@@ -8,6 +8,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import axios from 'axios';
 
+const botUrl = `https://t.me/${process.env.BOT_NAME}?start=info`;
+
 const useStyles = makeStyles(theme => ({
   '@global': {
     body: {
@@ -42,8 +44,9 @@ export default function SignUp(props) {
   const [isSignUp, setIsSignUp] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [telegramId, setTelegramId] = useState('');
   const [password, setPassword] = useState('');
-
+  console.log(process.env);
   function handleSuccess(res) {
     localStorage.setItem('token', res.data.token);
     props.history.push('/calendar');
@@ -61,6 +64,7 @@ export default function SignUp(props) {
       name,
       email,
       password,
+      telegramId,
     };
     axios
       .post('/api/users/register', userData)
@@ -100,6 +104,10 @@ export default function SignUp(props) {
     setEmail(e.target.value);
   }
 
+  function onUpdateTelegramId(e) {
+    setTelegramId(e.target.value);
+  }
+
   function onUpdatePassword(e) {
     setPassword(e.target.value);
   }
@@ -113,7 +121,7 @@ export default function SignUp(props) {
         required
         fullWidth
         id="name"
-        label="Name"
+        label="Имя"
         autoFocus
         data-lpignore="true"
         value={name}
@@ -122,19 +130,44 @@ export default function SignUp(props) {
     </Grid>
   );
 
+  const telegramIdInput = isSignUp && (
+    <Grid item xs={12}>
+      <TextField
+        variant="outlined"
+        required
+        fullWidth
+        name="telegramId"
+        label="Telegram ID"
+        type="text"
+        id="telegramId"
+        data-lpignore="true"
+        value={telegramId}
+        onChange={onUpdateTelegramId}
+      />
+      <p>
+        Откройте{' '}
+        <a target="_blank" href={botUrl}>
+          {botUrl}
+        </a>{' '}
+        и нажмите 'Start' чтобы узнать Telegram ID
+      </p>
+    </Grid>
+  );
+
   function switchSignIn() {
     setIsSignUp(!isSignUp);
   }
 
-  const signUpButtonName = isSignUp ? 'Регистрация' : 'Вход';
-  const switchButtonName = isSignUp ? 'Вход' : 'Регистрация';
+  const header = isSignUp ? 'Регистрация' : 'Вход';
+  const signUpButtonName = isSignUp ? 'Зарегистрироваться' : 'Войти';
+  const switchButtonName = isSignUp ? 'Войти на сайт' : 'Зарегистрироваться';
 
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
       <div className={classes.paper}>
         <Typography component="h1" variant="h5">
-          {isSignUp ? 'Sign up' : 'Sign in'}
+          {header}
         </Typography>
         <form className={classes.form} noValidate>
           <Grid container spacing={2}>
@@ -145,20 +178,21 @@ export default function SignUp(props) {
                 required
                 fullWidth
                 id="email"
-                label="Email Address"
+                label="Почта"
                 name="email"
                 data-lpignore="true"
                 value={email}
                 onChange={onUpdateEmail}
               />
             </Grid>
+            {telegramIdInput}
             <Grid item xs={12}>
               <TextField
                 variant="outlined"
                 required
                 fullWidth
                 name="password"
-                label="Password"
+                label="Пароль"
                 type="password"
                 id="password"
                 autoComplete="current-password"

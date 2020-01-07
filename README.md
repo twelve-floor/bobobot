@@ -14,18 +14,20 @@ npm install
   - `BOT_TOKEN = <telegram_bot_token>`
   - `JWT_SECRET = <random string>`
   - `APP_URL = 'https://<app-name>.herokuapp.com:443'` - this is required for production only
-  - `ADMIN_TG_ID = <user id of admin's telegram>`
+  - `BOT_NAME = <bot name>`
   - `CRON_SERVICE_SECRET_TOKEN = some token for cron service to access bot via /api/checkDates?cronToken=`
 
 ## Running
 
-Development (Webpack dev server) mode:
+#### Development (Webpack dev server) mode:
+
+create a tunnel using ngrok and set APP_URL with it. it's needed for telegram bot to work
 
 ```shell
-npm run start:dev
+APP_URL=https://blabla.ngrok.io npm run start:dev
 ```
 
-Production mode:
+#### Production mode:
 
 ```shell
 npm start
