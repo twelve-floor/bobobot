@@ -41,6 +41,42 @@ app.use(express.json());
 // API routes
 require('./routes')(app);
 
+const sendMessagesToPatientsAndDoctors = ({ result, isTomorrow, res }) => {
+  const patientsForDoctor = {};
+  const day = isTomorrow ? 'завтра' : 'сегодня';
+  console.log(`Количество событий ${day}: ${result.length}`);
+  console.log({ events: JSON.stringify(result) });
+  result.forEach(item => {
+    bot.sendMessage(
+      item.patient.telegramId.trim(),
+      `Событие ${day}: ${item.name}`
+    );
+    console.log({ doctor: item.doctor });
+    // saving Data for each event per Doctor
+    if (item.doctor.telegramId) {
+      if (!patientsForDoctor[item.doctor.telegramId]) {
+        patientsForDoctor[item.doctor.telegramId] = {
+          name: item.doctor.name,
+          messages: [],
+        };
+      }
+      patientsForDoctor[item.doctor.telegramId].messages.push(
+        `${item.patient.name}: "${item.name}"`
+      );
+    }
+  });
+  let response = '';
+  for (const doctorTelegramId in patientsForDoctor) {
+    const all = patientsForDoctor[doctorTelegramId].messages.join('\n');
+    const message = `Отправил уведомления пациентам:\n${all}`;
+    bot.sendMessage(doctorTelegramId.trim(), message);
+    response += `<h3>${
+      patientsForDoctor[doctorTelegramId].name
+    }:</h3><p>${all}</p>\n`;
+  }
+  res.send(response || `Нет событий на ${day}`);
+};
+
 app.get('/api/checkDates', (req, res, next) => {
   if (req.query.cronToken !== cronToken) {
     res.send('Invalid token');
@@ -58,29 +94,28 @@ app.get('/api/checkDates', (req, res, next) => {
     },
   })
     .populate('patient')
-    .populate('doctor', 'telegramId')
+    .populate('doctor', ['telegramId', 'name'])
     .then(result => {
-      const patientsForDoctor = {};
-      result.forEach(item => {
-        bot.sendMessage(item.patient.telegramId, item.name);
-        // saving Data for each event per Doctor
-        if (item.doctor.telegramId) {
-          if (!patientsForDoctor[item.doctor.telegramId]) {
-            patientsForDoctor[item.doctor.telegramId] = [];
-          }
-          patientsForDoctor[item.doctor.telegramId].push(
-            `${item.patient.name}: "${item.name}"`
-          );
-        }
-      });
+      sendMessagesToPatientsAndDoctors({ result, isTomorrow: true, res });
+    })
+    .catch(err => next(err));
+});
 
-      for (const doctorTelegramId in patientsForDoctor) {
-        const message = `Отправил уведомления пациентам:\n${patientsForDoctor[
-          doctorTelegramId
-        ].join('\n')}`;
-        bot.sendMessage(doctorTelegramId, message);
-      }
-      res.send('OK');
+app.get('/api/checkDatesToday', (req, res, next) => {
+  if (req.query.cronToken !== cronToken) {
+    res.send('Invalid token');
+  }
+  const today = moment();
+  Event.find({
+    date: {
+      $gte: today.startOf('day').toDate(),
+      $lte: today.endOf('day').toDate(),
+    },
+  })
+    .populate('patient')
+    .populate('doctor', ['telegramId', 'name'])
+    .then(result => {
+      sendMessagesToPatientsAndDoctors({ result, isTomorrow: false, res });
     })
     .catch(err => next(err));
 });
