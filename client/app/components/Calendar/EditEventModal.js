@@ -30,7 +30,7 @@ export default function EditEventModal(props) {
     const updatedEvent = {
       _id: props.event.id,
       name: eventName,
-      date: props.event.start,
+      date: props.event.start.getTime(),
     };
 
     axios

@@ -30,9 +30,10 @@ export default function AddEventModal(props) {
     const token = localStorage.getItem('token');
     const event = {
       name: eventName,
-      date: props.date,
+      date: props.date.getTime(),
       parentEvent: null,
     };
+
     axios
       .post(`/api/events/${props.patientId}`, [event], {
         headers: { token: token },

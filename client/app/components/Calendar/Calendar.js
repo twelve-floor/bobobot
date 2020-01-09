@@ -70,7 +70,7 @@ const createEventsFromTemplate = (date, template) => {
     }
     return {
       name: eventWithDelta.name,
-      date: tempDate.toDate(),
+      date: tempDate.toDate().getTime(),
     };
   });
   return items;
@@ -136,7 +136,7 @@ class CalendarApp extends PureComponent {
     const updatedEvent = {
       name: event.title,
       _id: event.id,
-      date: start,
+      date: start.getTime(),
     };
     this.setState({ loading: true });
     axios
