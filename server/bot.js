@@ -52,8 +52,9 @@ function sendMessage(chat_id, text) {
     .post(`${apiUrl}/sendMessage`, {
       text,
       chat_id,
+      parse_mode: 'Markdown',
       reply_markup: {
-        remove_keyboard: true,
+        keyboard: [[{ text: 'Получить расписание' }]],
       },
     })
     .then(() => console.log('Message sent'))

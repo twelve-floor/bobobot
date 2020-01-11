@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const Event = require('./models/Event');
+const Patient = require('./models/Patient');
 
 const historyApiFallback = require('connect-history-api-fallback');
 const mongoose = require('mongoose');
@@ -20,7 +21,7 @@ const adminId = process.env.ADMIN_TG_ID;
 const port = process.env.PORT || 3000;
 const token = process.env.BOT_TOKEN;
 
-const tunnelUrl = process.env.APP_URL || 'https://7c6cd916.ngrok.io';
+const tunnelUrl = process.env.APP_URL || 'https://9e864b54.ngrok.io';
 const urlForWebhook = `${tunnelUrl}/bot`;
 
 const apiUrl = `https://api.telegram.org/bot${token}`;
@@ -61,14 +62,14 @@ const sendMessagesToPatientsAndDoctors = ({ result, isTomorrow, res }) => {
         };
       }
       patientsForDoctor[item.doctor.telegramId].messages.push(
-        `${item.patient.name}: "${item.name}"`
+        `${getUserTelegramLink(item.patient)}: "${item.name}"`
       );
     }
   });
   let response = '';
   for (const doctorTelegramId in patientsForDoctor) {
     const all = patientsForDoctor[doctorTelegramId].messages.join('\n');
-    const message = `Отправил уведомления пациентам:\n${all}`;
+    const message = `*Отправил уведомления пациентам:*\n${all}`;
     bot.sendMessage(doctorTelegramId.trim(), message);
     response += `<h3>${
       patientsForDoctor[doctorTelegramId].name
@@ -120,7 +121,11 @@ app.get('/api/checkDatesToday', (req, res, next) => {
     .catch(err => next(err));
 });
 
-app.post('/bot', (req, res) => {
+function getUserTelegramLink(user) {
+  return `[${user.name}](tg://user?id=${user.telegramId})`;
+}
+
+app.post('/bot', async (req, res) => {
   const { message } = req.body;
   const { chat, contact, text } = message;
 
@@ -130,6 +135,39 @@ app.post('/bot', (req, res) => {
 
   if (text === '/start info') {
     bot.sendMessage(chat.id, `Ваш Telegram ID: ${chat.id}`);
+  }
+
+  if (text === 'Получить расписание') {
+    const patient = await Patient.findOne({ telegramId: chat.id });
+    const eventsForPatient = await Event.find({
+      patient: patient,
+      date: {
+        $gte: moment()
+          .startOf('day')
+          .toDate(),
+      },
+    })
+      .sort('date')
+      .populate('doctor', ['name', 'telegramId']);
+    if (eventsForPatient.length === 0) {
+      bot.sendMessage(chat.id, 'У вас нет предстоящих событий.');
+    } else {
+      const body = eventsForPatient
+        .map(
+          event =>
+            `${moment(event.date)
+              .locale('ru')
+              .format('Do MMM YYYY')}: "${
+              event.name
+            }" у врача ${getUserTelegramLink(event.doctor)}.`
+        )
+        .join('\n');
+      const message = `*У вас запланировано ${
+        eventsForPatient.length
+      } событий(-я)*:\n${body}`;
+      bot.sendMessage(chat.id, message);
+    }
+    console.log({ eventsForPatient });
   }
 
   if (contact) {
