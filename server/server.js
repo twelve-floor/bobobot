@@ -41,6 +41,12 @@ app.use(express.json());
 
 // API routes
 require('./routes')(app);
+const noTelegramIdErrorMessage = patient =>
+  `Не удалось отправить сообщение пациенту ${
+    patient.name
+  }, потому что он/она не написал боту "${
+    process.env.BOT_NAME
+  }" команду "/start" или не отправил свой номер`;
 
 const sendMessagesToPatientsAndDoctors = ({ result, isTomorrow, res }) => {
   const patientsForDoctor = {};
@@ -48,10 +54,12 @@ const sendMessagesToPatientsAndDoctors = ({ result, isTomorrow, res }) => {
   console.log(`Количество событий ${day}: ${result.length}`);
   console.log({ events: JSON.stringify(result) });
   result.forEach(item => {
-    bot.sendMessage(
-      item.patient.telegramId.trim(),
-      `Событие ${day}: ${item.name}`
-    );
+    if (item.patient.telegramId) {
+      bot.sendMessage(
+        item.patient.telegramId.trim(),
+        `Событие ${day}: ${item.name}`
+      );
+    }
     console.log({ doctor: item.doctor });
     // saving Data for each event per Doctor
     if (item.doctor.telegramId) {
@@ -61,9 +69,15 @@ const sendMessagesToPatientsAndDoctors = ({ result, isTomorrow, res }) => {
           messages: [],
         };
       }
-      patientsForDoctor[item.doctor.telegramId].messages.push(
-        `${getUserTelegramLink(item.patient)}: "${item.name}"`
-      );
+      if (item.patient.telegramId) {
+        patientsForDoctor[item.doctor.telegramId].messages.push(
+          `${getUserTelegramLink(item.patient)}: "${item.name}"`
+        );
+      } else {
+        patientsForDoctor[item.doctor.telegramId].messages.push(
+          noTelegramIdErrorMessage(item.patient)
+        );
+      }
     }
   });
   let response = '';
@@ -71,7 +85,7 @@ const sendMessagesToPatientsAndDoctors = ({ result, isTomorrow, res }) => {
     const all = patientsForDoctor[doctorTelegramId].messages.join('\n');
     const message = `*Отправил уведомления пациентам:*\n${all}`;
     bot.sendMessage(doctorTelegramId.trim(), message);
-    response += `<h3>${
+    response += `<h3>Для доктора ${
       patientsForDoctor[doctorTelegramId].name
     }:</h3><p>${all}</p>\n`;
   }
@@ -128,7 +142,7 @@ function getUserTelegramLink(user) {
 app.post('/bot', async (req, res) => {
   const { message } = req.body;
   const { chat, contact, text } = message;
-
+  console.log(JSON.stringify(message));
   if (text === '/start') {
     bot.askForPhone(chat.id);
   }

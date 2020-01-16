@@ -20,7 +20,7 @@ function handlePhone(msg) {
       const text =
         err || !doc
           ? 'Номер не найден, попросите вашего врача добавить ваш номер в базу'
-          : 'Номер сохранен';
+          : 'Номер сохранен, спасибо';
       sendMessage(msg.chat.id, text);
     }
   );
@@ -29,7 +29,8 @@ function handlePhone(msg) {
 function askForPhone(chat_id) {
   axios
     .post(`${apiUrl}/sendMessage`, {
-      text: 'Отправьте телефон для получения уведомлений',
+      text:
+        'Пожалуйста, нажмите кнопку "Отправить телефон", чтобы бот смог отправлять вам уведомления о назначенных записях',
       chat_id,
       reply_markup: {
         one_time_keyboard: true,
