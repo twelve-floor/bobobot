@@ -11,6 +11,7 @@ import Button from '@material-ui/core/Button';
 import AddPatientModal from './AddPatientModal';
 import AddEventModal from './AddEventModal';
 import EditPatientModal from './EditPatientModal';
+import DeletePatientModal from './DeletePatientModal';
 import EditEventModal from './EditEventModal';
 import AddEventTemplateModal from './AddEventTemplateModal';
 import SelectEventTemplateModal from './SelectEventTemplateModal';
@@ -25,6 +26,7 @@ import {
   CHOOSE_EVENTS_TEMPLATE,
   ALL_PATIENTS_ID,
   EDIT_EVENT,
+  DELETE_PATIENT,
 } from './constants';
 import './calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
@@ -180,6 +182,13 @@ class CalendarApp extends PureComponent {
     });
   };
 
+  onPatientRemoved = removedPatientId => {
+    const patients = this.state.patients.filter(
+      patient => patient._id !== removedPatientId
+    );
+    this.setState({ patients });
+  };
+
   onDateSelected = dateItem => {
     if (this.modalContentType === ADD_EVENT) {
       this.selectedDate = dateItem.start;
@@ -220,7 +229,9 @@ class CalendarApp extends PureComponent {
 
   onSetModalType = modalType => {
     this.modalContentType = modalType;
-    if ([EDIT_PATIENT, CHOOSE_EVENTS_TEMPLATE].includes(modalType)) {
+    if (
+      [DELETE_PATIENT, EDIT_PATIENT, CHOOSE_EVENTS_TEMPLATE].includes(modalType)
+    ) {
       this.setState({ modalIsOpen: true });
     }
   };
@@ -342,6 +353,14 @@ class CalendarApp extends PureComponent {
         closeModal={this.closeModal}
         onEventTemplateSelected={this.onEventTemplateSelected}
         eventTemplates={this.state.eventTemplates}
+      />
+    ),
+    [DELETE_PATIENT]: () => (
+      <DeletePatientModal
+        closeModal={this.closeModal}
+        patientId={this.state.selectedPatient._id}
+        setLoading={this.setLoading}
+        onPatientRemoved={this.onPatientRemoved}
       />
     ),
   };

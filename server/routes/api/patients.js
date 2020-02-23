@@ -37,11 +37,19 @@ module.exports = app => {
     }
   });
 
-  app.delete('/api/patients/:id', authMiddleware, function(req, res, next) {
-    Patient.findOneAndRemove({ _id: req.params.id })
-      .exec()
-      .then(patient => res.json())
-      .catch(err => next(err));
+  app.delete('/api/patients/:id', authMiddleware, async function(
+    req,
+    res,
+    next
+  ) {
+    try {
+      const user = await User.findById(req.userId);
+      user.patients.pull(req.params.id);
+      await user.save();
+      res.json(user);
+    } catch (error) {
+      next(error);
+    }
   });
 
   app.put('/api/patients/:id', authMiddleware, (req, res, next) => {

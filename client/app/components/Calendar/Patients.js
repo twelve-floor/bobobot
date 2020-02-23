@@ -12,6 +12,7 @@ import {
   CHOOSE_EVENTS_TEMPLATE,
   EDIT_PATIENT,
   ALL_PATIENTS_ID,
+  DELETE_PATIENT,
 } from './constants';
 
 export default class PatientsList extends PureComponent {
@@ -92,6 +93,11 @@ export default class PatientsList extends PureComponent {
     this.props.changeModalType(EDIT_PATIENT);
   };
 
+  onDeletePatient = () => {
+    this.setState({ anchorEl: null });
+    this.props.changeModalType(DELETE_PATIENT);
+  };
+
   render() {
     const patients = this.props.patients
       .filter(patient =>
@@ -126,7 +132,7 @@ export default class PatientsList extends PureComponent {
           <MenuItem onClick={this.onEditPatient} className="menu-item">
             Изменить
           </MenuItem>
-          <MenuItem onClick={this.handleClose} disabled className="menu-item">
+          <MenuItem onClick={this.onDeletePatient} className="menu-item">
             Удалить
           </MenuItem>
         </Menu>
