@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Fragment } from 'react';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
@@ -131,27 +131,37 @@ export default function SignUp(props) {
   );
 
   const telegramIdInput = isSignUp && (
-    <Grid item xs={12}>
-      <TextField
-        variant="outlined"
-        required
-        fullWidth
-        name="telegramId"
-        label="Telegram ID"
-        type="text"
-        id="telegramId"
-        data-lpignore="true"
-        value={telegramId}
-        onChange={onUpdateTelegramId}
-      />
-      <p>
+    <Fragment>
+      <p
+        style={{
+          fontWeight: 'bold',
+          fontSize: 18,
+          textAlign: 'center',
+        }}
+      >
         Откройте{' '}
         <a target="_blank" href={botUrl}>
           {botUrl}
         </a>{' '}
-        и нажмите 'Start' чтобы узнать Telegram ID
+        с телефона или компьютера, на котором установлен Телеграм и нажмите
+        'Start', чтобы получить ID от бота
       </p>
-    </Grid>
+
+      <Grid item xs={12}>
+        <TextField
+          variant="outlined"
+          required
+          fullWidth
+          name="telegramId"
+          label="Введите ID, полученный от бота"
+          type="text"
+          id="telegramId"
+          data-lpignore="true"
+          value={telegramId}
+          onChange={onUpdateTelegramId}
+        />
+      </Grid>
+    </Fragment>
   );
 
   function switchSignIn() {

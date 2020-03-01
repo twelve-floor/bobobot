@@ -54,22 +54,24 @@ const sendMessagesToPatientsAndDoctors = ({ result, isTomorrow, res }) => {
   console.log(`Количество событий ${day}: ${result.length}`);
   console.log({ events: JSON.stringify(result) });
   result.forEach(item => {
-    if (item.patient.telegramId) {
+    if (item.patient && item.patient.telegramId) {
       bot.sendMessage(
         item.patient.telegramId.trim(),
         `Событие ${day}: ${item.name}`
       );
+    } else {
+      console.log('no patient or patients telegram id for', item);
     }
     console.log({ doctor: item.doctor });
     // saving Data for each event per Doctor
-    if (item.doctor.telegramId) {
+    if (item.doctor && item.doctor.telegramId) {
       if (!patientsForDoctor[item.doctor.telegramId]) {
         patientsForDoctor[item.doctor.telegramId] = {
           name: item.doctor.name,
           messages: [],
         };
       }
-      if (item.patient.telegramId) {
+      if (item.patient && item.patient.telegramId) {
         patientsForDoctor[item.doctor.telegramId].messages.push(
           `${getUserTelegramLink(item.patient)}: "${item.name}"`
         );
