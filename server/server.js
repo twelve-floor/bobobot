@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const Event = require('./models/Event');
 const Patient = require('./models/Patient');
+const User = require('./models/User');
 
 const historyApiFallback = require('connect-history-api-fallback');
 const mongoose = require('mongoose');
@@ -11,6 +12,7 @@ const webpackDevMiddleware = require('webpack-dev-middleware');
 const webpackHotMiddleware = require('webpack-hot-middleware');
 const moment = require('moment');
 const axios = require('axios');
+const jwt = require('jsonwebtoken');
 const bot = require('./bot');
 
 const webpackConfig = require('../webpack.config');
@@ -20,8 +22,8 @@ const cronToken = process.env.CRON_SERVICE_SECRET_TOKEN;
 const adminId = process.env.ADMIN_TG_ID;
 const port = process.env.PORT || 3000;
 const token = process.env.BOT_TOKEN;
-
-const tunnelUrl = process.env.APP_URL || 'https://9e864b54.ngrok.io';
+const secret = process.env.JWT_SECRET;
+const tunnelUrl = process.env.APP_URL || 'https://2340dcde.ngrok.io';
 const urlForWebhook = `${tunnelUrl}/bot`;
 
 const apiUrl = `https://api.telegram.org/bot${token}`;
@@ -56,10 +58,11 @@ const sendMessagesToPatientsAndDoctors = ({ result, isTomorrow, res }) => {
   result.forEach(item => {
     try {
       if (item.patient && item.patient.telegramId) {
-        bot.sendMessage(
-          item.patient.telegramId.trim(),
-          `Событие ${day}: ${item.name}`
-        );
+        bot.sendMessage({
+          chat_id: item.patient.telegramId.trim(),
+          text: `Событие ${day}: ${item.name}`,
+          to: 'patient',
+        });
       } else {
         console.log('no patient or patients telegram id for', item);
       }
@@ -91,7 +94,11 @@ const sendMessagesToPatientsAndDoctors = ({ result, isTomorrow, res }) => {
   for (const doctorTelegramId in patientsForDoctor) {
     const all = patientsForDoctor[doctorTelegramId].messages.join('\n');
     const message = `*Отправил уведомления пациентам:*\n${all}`;
-    bot.sendMessage(doctorTelegramId.trim(), message);
+    bot.sendMessage({
+      chat_id: doctorTelegramId.trim(),
+      text: message,
+      to: 'doctor',
+    });
     response += `<h3>Для доктора ${
       patientsForDoctor[doctorTelegramId].name
     }:</h3><p>${all}</p>\n`;
@@ -155,7 +162,32 @@ app.post('/bot', async (req, res) => {
   }
 
   if (text === '/start info') {
-    bot.sendMessage(chat.id, `Ваш Telegram ID: ${chat.id}`);
+    bot.sendMessage({
+      chat_id: chat.id,
+      text: `Ваш Telegram ID: ${chat.id}`,
+      to: 'doctor',
+    });
+  }
+
+  if (text === 'Открыть календарь') {
+    const user = await User.findOne({ telegramId: chat.id });
+    if (user == null) {
+      bot.sendMessage({
+        chat_id: chat.id,
+        text:
+          'Пользователь на зарегистрирован или неправильно указал Telegram ID',
+        to: 'doctor',
+      });
+    } else {
+      const payload = { userId: user.id };
+      const token = jwt.sign(JSON.stringify(payload), secret);
+      const url = `Пройдите по ссылке, чтобы открыть ваш календарь: ${tunnelUrl}/calendar?token=${token}`;
+      bot.sendMessage({
+        chat_id: chat.id,
+        text: url,
+        to: 'doctor',
+      });
+    }
   }
 
   if (text === 'Получить расписание') {
@@ -171,7 +203,11 @@ app.post('/bot', async (req, res) => {
       .sort('date')
       .populate('doctor', ['name', 'telegramId']);
     if (eventsForPatient.length === 0) {
-      bot.sendMessage(chat.id, 'У вас нет предстоящих событий.');
+      bot.sendMessage({
+        chat_id: chat.id,
+        text: 'У вас нет предстоящих событий.',
+        to: 'patient',
+      });
     } else {
       const body = eventsForPatient
         .map(
@@ -186,7 +222,7 @@ app.post('/bot', async (req, res) => {
       const message = `*У вас запланировано ${
         eventsForPatient.length
       } событий(-я)*:\n${body}`;
-      bot.sendMessage(chat.id, message);
+      bot.sendMessage({ chat_id: chat.id, text: message, to: 'patient' });
     }
     console.log({ eventsForPatient });
   }

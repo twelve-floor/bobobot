@@ -89,8 +89,20 @@ class CalendarApp extends PureComponent {
   };
 
   componentDidMount() {
-    this.setState({ loading: true });
     const token = localStorage.getItem('token');
+    if (!token) {
+      const query = new URLSearchParams(this.props.location.search);
+      const queryToken = query.get('token');
+      if (!queryToken) {
+        this.props.history.push('/');
+      } else {
+        localStorage.setItem('token', queryToken);
+        this.props.history.push('/calendar');
+      }
+      return;
+    }
+
+    this.setState({ loading: true });
     const allPatients = { name: 'Все', _id: ALL_PATIENTS_ID };
     axios
       .get('/api/patients', { headers: { token } })

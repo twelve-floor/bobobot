@@ -48,14 +48,20 @@ function askForPhone(chat_id) {
     .catch(er => console.log(er));
 }
 
-function sendMessage(chat_id, text) {
+const KEYBOARD_BUTTONS = {
+  patient: 'Получить расписание',
+  doctor: 'Открыть календарь',
+};
+
+function sendMessage({ chat_id, text, to }) {
+  const buttonText = KEYBOARD_BUTTONS[to];
   axios
     .post(`${apiUrl}/sendMessage`, {
       text,
       chat_id,
       parse_mode: 'Markdown',
       reply_markup: {
-        keyboard: [[{ text: 'Получить расписание' }]],
+        keyboard: [[{ text: buttonText }]],
       },
     })
     .then(() => console.log('Message sent'))
