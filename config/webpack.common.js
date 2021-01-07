@@ -1,7 +1,7 @@
 const webpack = require('webpack');
 const autoprefixer = require('autoprefixer');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const helpers = require('./helpers');
@@ -34,57 +34,30 @@ module.exports = {
         include: helpers.root('client'),
         loader: 'babel-loader',
       },
-      // {
-      //   test: /\.css$/,
-      //   use: [
-      //     {
-      //       loader: MiniCssExtractPlugin.loader,
-      //       options: {
-      //         // you can specify a publicPath here
-      //         // by default it uses publicPath in webpackOptions.output
-      //         publicPath: '../',
-      //         hmr: process.env.NODE_ENV === 'development',
-      //       },
-      //     },
-      //     'css-loader',
-      //   ],
-      // },
+
+      //CSS files
+      {
+        test: /\.css$/i,
+        use: [MiniCssExtractPlugin.loader, 'css-loader'],
+      },
 
       // SCSS files
       {
-        test: /\.(scss|sass|css)$/i,
-        loader: ExtractTextPlugin.extract({
-          fallback: 'style-loader',
-          use: [
-            {
-              loader: 'css-loader',
-              options: {
-                sourceMap: true,
-                importLoaders: 1,
-              },
-            },
-            {
-              loader: 'postcss-loader',
-              options: {
-                plugins: () => [autoprefixer],
-              },
-            },
-            'sass-loader',
-          ],
-        }),
+        test: /\.s[ac]ss$/i,
+        use: [
+          // Creates `style` nodes from JS strings
+          "style-loader",
+          // Translates CSS into CommonJS
+          "css-loader",
+          // Compiles Sass to CSS
+          "sass-loader",
+        ],
       },
     ],
   },
 
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
-
-    // new MiniCssExtractPlugin({
-    //   // Options similar to the same options in webpackOptions.output
-    //   // both options are optional
-    //   filename: '[name].css',
-    //   chunkFilename: '[id].css',
-    // }),
 
     new webpack.DefinePlugin({
       'process.env': {
@@ -100,15 +73,17 @@ module.exports = {
       inject: 'body',
     }),
 
-    new ExtractTextPlugin({
-      filename: 'css/[name].[hash].css',
-      disable: !isProd,
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'client', to: "public" },
+      ],
     }),
 
-    new CopyWebpackPlugin([
-      {
-        from: helpers.root('client/public'),
-      },
-    ]),
+    new MiniCssExtractPlugin({
+      // Options similar to the same options in webpackOptions.output
+      // both options are optional
+      filename: "[name].css",
+      chunkFilename: "[id].css",
+    }),
   ],
 };
