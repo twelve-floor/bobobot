@@ -87,11 +87,13 @@ module.exports = {
       inject: 'body',
     }),
 
-    new CopyWebpackPlugin([
-      {
-        from: helpers.root('client/public'),
-      },
-    ]),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+         from: helpers.root('client/public'),
+        }
+      ]
+    }),
 
     new MiniCssExtractPlugin(),
   ],
