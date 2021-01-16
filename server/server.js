@@ -33,7 +33,7 @@ axios
   .then(res => console.log(res.data))
   .catch(er => console.log(er));
 
-mongoose.connect(process.env.DB_URL);
+mongoose.connect(process.env.DB_URL, {useNewUrlParser: true, useUnifiedTopology: true});
 mongoose.set('useFindAndModify', false);
 mongoose.Promise = global.Promise;
 
